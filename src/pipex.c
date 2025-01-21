@@ -6,7 +6,7 @@
 /*   By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 19:26:04 by wshee             #+#    #+#             */
-/*   Updated: 2025/01/16 18:45:10 by wshee            ###   ########.fr       */
+/*   Updated: 2025/01/21 21:15:42 by wshee            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,21 +18,61 @@ void error_and_exit(char *message)
 		exit(EXIT_FAILURE);
 }
 
-void	pipex(int fds1, int fds2)
+void init_pipes(int *pipefd)
 {
+	if (pipe(pipefd) == -1)
+		error_and_exit("Pipe error\n");
+}
 
+void	pipex(int fd1, int fd2, int ac, char **av)
+{
+	int pipefd[2];
+	pid_t	pid;
+	int cmd_count;
+	int i;
+
+	i = 0;
+	cmd_count = ac - 3;
+	while (i < cmd_count)
+	{
+		pid = fork();
+		if (pid == -1)
+			error_and_exit("Fork error\n");
+		else if (pid == 0)
+		{
+			child_process(fd1, fd2, pipefd, i);
+			execute_command(av);
+		}
+		else
+			parent_process(pipefd);
+		i++;
+	}
 }
 
 //dup2 makes a new copy of fd
-void child_process()
+void child_process(int fd1, int fd2, int *pipefd, int i)
 {
-	dup2(pipefd[1], 1);
-	close()
+	if (i == 0)
+	{
+		close(pipefd[0]);
+		dup2(fd1, STDIN_FILENO);
+		close(fd1);
+		dup2(pipefd[1], STDOUT_FILENO);
+		close(pipefd[1]);
+	}
+	else if ()
+	{
+		close(pipefd[1]);
+		dup2(fd2, 1);
+		close(fd2);
+		dup2(pipefd[0], STDIN_FILENO);
+		close(pipefd[0]);
+	}
 }
 
-void parent_process()
+void parent_process(int *pipefd)
 {
-
+	close(pipefd[1]);
 }
 
 //pid_t data type is signed int representing process ID (PID)
@@ -48,22 +88,19 @@ void parent_process()
 //waitpid is wait for the child process to finish
 int main(int ac, char **av)
 {
-	int pipefd[2];
-	pid_t	pid;
+	int fd1;
+	int fd2;
 
 	if (ac != 5)
 		error_and_exit("Usage: ./pipex infile cmd1 cmd2 outfile\n");
-	if (pipe(pipefd) == -1)
-		error_and_exit("Pipe error\n");
-	if (open(argv[1]))
-	pid = fork();
-	if (pid == -1)
-		error_and_exit("Fork error\n");
-	if (pid == 0)
-		child_process(pipefd[1]);
-	else
-		parent_process();
-	close(pipefd[0]);
-	close(pipefd[1]);
+	fd1 = open(av[1], O_RDONLY);
+	fd2 = open(av[4], O_CREAT | O_RDWR);
+	if (fd1 < 0 || fd2 < 0)
+		error_and_exit("File not exist");
+	init_pipes
+	check_commands
+	pipex(fd1, fd2, av);
+	// close(pipefd[0]);
+	// close(pipefd[1]);
 	waitpid(pid);
 }

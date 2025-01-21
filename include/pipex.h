@@ -6,7 +6,7 @@
 /*   By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 19:18:05 by wshee             #+#    #+#             */
-/*   Updated: 2025/01/16 16:12:44 by wshee            ###   ########.fr       */
+/*   Updated: 2025/01/21 15:06:45 by wshee            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,6 @@
 
 # include <stdlib.h>
 # include <unistd.h>
-
+# include <fcntl.h>
 
 #endif
