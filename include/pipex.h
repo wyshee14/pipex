@@ -6,7 +6,7 @@
 /*   By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 19:18:05 by wshee             #+#    #+#             */
-/*   Updated: 2025/01/21 15:06:45 by wshee            ###   ########.fr       */
+/*   Updated: 2025/01/23 17:58:50 by wshee            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,5 +16,17 @@
 # include <stdlib.h>
 # include <unistd.h>
 # include <fcntl.h>
+# include <stdio.h>
+# include "../libft/libft.h"
+
+typedef struct s_pipex
+{
+	int infile;
+	int outfile;
+	int is_heredoc;
+	int cmd_count;
+}				t_pipex;
+
+
 
 #endif
