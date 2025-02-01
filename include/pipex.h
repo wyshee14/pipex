@@ -17,6 +17,7 @@
 # include <unistd.h>
 # include <fcntl.h>
 # include <stdio.h>
+# include <sys/wait.h>
 # include "../libft/libft.h"
 
 typedef struct s_pipex

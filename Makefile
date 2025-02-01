@@ -32,7 +32,7 @@ CFLAGS = -Wall -Wextra -Werror -I$(INC_DIR) -I$(LIBFT_DIR)
 #Source Files
 #addprefix <prefix>, <list>
 #<prefix> is the string that added to the beginning of each word
-SRC = $(SRC_DIR)/pipex.c
+SRC = $(SRC_DIR)/mandatory.c
 
 OBJ_SRC = $(SRC:.c=.o)
 

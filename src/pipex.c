@@ -57,27 +57,27 @@ void	test_pipes(int *pipefd, int *cmd_count)
 	//child process
 	while (i < *cmd_count - 1)
 	{
-		printf("Writing to pipe %d\n", i);
-		printf("len: %zu\n", ft_strlen(message[i]));
+		printf("Child Process: Writing to pipe %d\n", i);
+		//printf("len: %zu\n", ft_strlen(message[i]));
+		close(pipefd[i * 2]); //close read end
 		if (write(pipefd[i * 2 + 1], message[i], ft_strlen(message[i] + 1)) == -1)
 			error_and_exit("write error");
 		printf("Written to pipe %d: %s\n", i, message[i]);
-		//close(pipefd[i * 2 + 1]); //write end
-		//close(pipefd[i * 2]); //read end
+		close(pipefd[i * 2 + 1]); //write end
 		i++;
 	}
 	//parent process
 	i = 0;
 	while (i < *cmd_count - 1)
 	{
-		printf("Reading from pipe %d\n", i);
+		printf("Parent Process: Reading from pipe %d\n", i);
+		close(pipefd[i * 2 + 1]); //close write end
 		ssize_t bytes_read = read(pipefd[i * 2], buffer, sizeof(buffer) - 1);
 		if (bytes_read == -1)
 			error_and_exit("read error");
 		buffer[bytes_read] = '\0';
 		printf("Pipe %d: %s\n", i, buffer);
 		close(pipefd[i * 2]); //read end
-		// close(pipefd[i * 2 + 1]); //write end
 		i++;
 	}
 }
@@ -135,6 +135,8 @@ void	ft_pipex(int ac, char **av, int *is_heredoc, int *cmd_count)
 	int *pipefd;
 	pid_t	pid;
 	int i;
+	char *str = "Hello";
+	char buffer[10];
 
 	infile = open_input_files(av[1], is_heredoc);
 	outfile = open(av[ac - 1], O_CREAT | O_RDWR | O_TRUNC, 0777);
@@ -149,11 +151,9 @@ void	ft_pipex(int ac, char **av, int *is_heredoc, int *cmd_count)
 			error_and_exit("Fork error\n");
 		else if (pid == 0) //child
 		{
+			printf("Child process: \n");
 			close(pipefd[i * 2]);
-			char message[128];
-			snprintf(message, sizeof(message), "Message from child %d", i + 1);
-			if (write(pipefd[i * 2 + 1], message, ft_strlen(&message[i])) == -1)
-				error_and_exit("write error");
+			write(pipefd[i * 2 + 1], str, 6);
 			//dup2(infile, STDIN_FILENO);
 			// close (infile);
 			// dup2(pipefd[i * 2 + 1], 1);
@@ -162,7 +162,12 @@ void	ft_pipex(int ac, char **av, int *is_heredoc, int *cmd_count)
 			//execute_command(av);
 		}
 		else //parent
-			close (pipefd[i * 2]);
+		{
+			printf("Parent process: \n");
+			close(pipefd[i * 2 + 1]);
+			read(pipefd[i * 2], buffer, 6);
+			close(pipefd[i * 2]);
+		}
 		i++;
 	}
 	i = 0;
@@ -231,6 +236,7 @@ int main(int ac, char **av)
 {
 	int cmd_count;
 	int is_heredoc;
+	int *pipefd;
 
 	cmd_count = 0;
 	is_heredoc = 0;
@@ -238,16 +244,16 @@ int main(int ac, char **av)
 		error_and_exit("Usage: ./pipex infile cmd1 cmd2 outfile\n");
 	handle_input(ac, av, &cmd_count, &is_heredoc);
 	printf("cmd_count: %d\n", cmd_count);
-	// if (cmd_count > 0)
-	// {
-	// 	pipefd = init_pipes(&cmd_count);
-	// 	printf("Pipe Initialized\n");
-	// 	test_pipes(pipefd, &cmd_count);
-	// 	printf("Test pipes executed\n");
-	// }
-	// else
-	// 	error_and_exit("Invalid execution");
-	ft_pipex(ac, av, &is_heredoc, &cmd_count);
+	if (cmd_count > 0)
+	{
+		pipefd = init_pipes(&cmd_count);
+		printf("Pipe Initialized\n");
+		test_pipes(pipefd, &cmd_count);
+		printf("Test pipes executed\n");
+	}
+	else
+		error_and_exit("Invalid execution");
+	//ft_pipex(ac, av, &is_heredoc, &cmd_count);
 	// check_commands
 	// waitpid(pid);
 }
