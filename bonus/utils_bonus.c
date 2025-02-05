@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   utils.c                                            :+:      :+:    :+:   */
+/*   utils_bonus.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/05 15:14:19 by wshee             #+#    #+#             */
-/*   Updated: 2025/02/05 15:29:56 by wshee            ###   ########.fr       */
+/*   Updated: 2025/02/05 17:16:17 by wshee            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ void error_and_exit(char *message)
 	exit(EXIT_FAILURE);
 }
 
-void free_2d(char **arr)
+void free_2d(void **arr)
 {
     int i;
 
@@ -57,21 +57,20 @@ char *fetch_path(char *cmd, char ** env)
     char *path;
 
     i = 0;
-	//**env_path = NULL;
     while (env[i])
     {
         if (ft_strncmp(env[i], "PATH=", 5) == 0)
         {
             env_path = ft_split(env[i] + 5, ':');
-			if (env_path == NULL)
-				return (NULL);
-			break ;
+            break ;
         }
         i++;
     }
+    if (env_path == NULL)
+        return (NULL);
     add_path = ft_strjoin("/", cmd);
     path = access_path(env_path, add_path);
-    free_2d(env_path);
+    free_2d((void **)env_path);
     free(add_path);
     return(path);
 }
@@ -86,7 +85,7 @@ void execute_command(char *cmd, char **env)
     // printf("%s\n", path);
     if (!path)
     {
-        free_2d(args);
+        free_2d((void **)args);
         error_and_exit("Command not found.\n");
     }
     if ((execve(path, args, env)) == -1)
