@@ -1,90 +1,9 @@
 # include "../include/pipex.h"
 
-void error_and_exit(char *message)
-{
-	perror(message);
-	exit(EXIT_FAILURE);
-}
-
-void free_2d(char **arr)
-{
-    int i;
-
-    i = 0;
-    while (arr[i])
-    {
-        free(arr[i]);
-        i++;
-    }
-    free(arr);
-}
-
-char *access_path(char **env_path, char *add_path)
-{
-    int i;
-    char *cmd_path;
-
-    i = 0;
-    while (env_path[i])
-    {
-        cmd_path = ft_strjoin(env_path[i], add_path);
-        if (access(cmd_path, F_OK) == 0)
-            break ;
-        free(cmd_path);
-        cmd_path = NULL;
-        i++;
-    }
-    return (cmd_path);  
-}
-
-char *fetch_path(char *cmd, char ** env)
-{
-    int i;
-    char **env_path;
-    char *add_path;
-    char *path;
-
-    i = 0;
-    while (env[i])
-    {
-        if (ft_strncmp(env[i], "PATH=", 5) == 0)
-        {
-            env_path = ft_split(env[i] + 5, ':');
-            break ;
-        }
-        i++;
-    }
-    if (env_path == NULL)
-        return (NULL);
-    add_path = ft_strjoin("/", cmd);
-    path = access_path(env_path, add_path);
-    free_2d(env_path);
-    free(add_path);
-    return(path);
-}
-
-void execute_command(char *cmd, char **env)
-{
-    char **args;
-    char *path;
-
-    args = ft_split(cmd, ' ');
-    path = fetch_path(args[0], env);
-    // printf("%s\n", path);
-    if (!path)
-    {
-        free_2d(args);
-        error_and_exit("Command not found.\n");
-    }
-    if ((execve(path, args, env)) == -1)
-        error_and_exit("Execve error.\n");
-}
-
 void child_process1(char **av, char **env, int *fd)
 {
     int infile;
     pid_t pid1;
-    int status;
 
     pid1 = fork();
     if (pid1 < 0)
@@ -105,7 +24,7 @@ void child_process1(char **av, char **env, int *fd)
     else
     {
         close (fd[1]);
-        waitpid(pid1, &status, 0);
+        wait(NULL);
     }
 }
 
@@ -113,7 +32,6 @@ void child_process2(char **av, char **env, int *fd)
 {
     int outfile;
     pid_t pid2;
-    int status;
 
     pid2 = fork();
     if (pid2 < 0)
@@ -134,7 +52,7 @@ void child_process2(char **av, char **env, int *fd)
     else
     {
         close (fd[0]);
-        waitpid(pid2, &status, 0);
+        wait(NULL);
     }
 }
 
