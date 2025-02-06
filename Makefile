@@ -6,7 +6,7 @@
 #    By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/12/23 20:31:35 by wshee             #+#    #+#              #
-#    Updated: 2025/02/05 15:51:17 by wshee            ###   ########.fr        #
+#    Updated: 2025/02/06 18:08:23 by wshee            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -35,10 +35,10 @@ CFLAGS = -Wall -Wextra -Werror -I$(INC_DIR) -I$(LIBFT_DIR)
 #<prefix> is the string that added to the beginning of each word
 SRC = $(SRC_DIR)mandatory.c	$(SRC_DIR)utils.c
 
-BONUS = $(BONUS_DIR)*.c
+BONUS = $(BONUS_DIR)bonus.c $(BONUS_DIR)utils_bonus.c $(BONUS_DIR)utils2_bonus.c
 
 OBJ_SRC = $(SRC:.c=.o)
-OBJ_BONUS = $(BONUS:..c=.o)
+OBJ_BONUS = $(BONUS:.c=.o)
 
 all: $(NAME)
 
@@ -56,7 +56,7 @@ bonus: $(OBJ_BONUS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -rf $(OBJ_SRC)
+	rm -rf $(OBJ_SRC) $(OBJ_BONUS)
 	@make -C $(LIBFT_DIR) clean
 
 fclean : clean

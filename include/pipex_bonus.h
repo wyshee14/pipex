@@ -1,17 +1,17 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   pipex.h                                            :+:      :+:    :+:   */
+/*   pipex_bonus.h                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 19:18:05 by wshee             #+#    #+#             */
-/*   Updated: 2025/02/06 16:48:41 by wshee            ###   ########.fr       */
+/*   Updated: 2025/02/06 16:53:57 by wshee            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef PIPEX_H
-# define PIPEX_H
+#ifndef PIPEX_BONUS_H
+# define PIPEX_BONUS_H
 
 # include <stdlib.h>
 # include <unistd.h>
@@ -31,11 +31,17 @@ typedef struct s_pipex
 	//int **pipefd;
 }				t_pipex;
 
-//Utils
+//Utils1
 void error_and_exit(char *message);
 void free_2d(void **arr);
 char *access_path(char **env_path, char *add_path);
 char *fetch_path(char *cmd, char ** env);
 void execute_command(char *cmd, char **env);
+
+//Utils2
+void dup2_input(t_pipex *data, int **pipefd, int i);
+void dup2_output(t_pipex *data, int **pipefd, int i);
+void	open_files(t_pipex *data, int ac, char **av);
+void init_data(t_pipex *data);
 
 #endif

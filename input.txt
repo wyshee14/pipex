@@ -1,0 +1,4 @@
+info: System started
+error: Disk full
+warning: High memory usage
+error: File not found

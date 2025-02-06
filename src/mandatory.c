@@ -72,3 +72,4 @@ int main (int ac, char **av, char **env)
 // Input Redirection with dup2(infile, STDIN_FILENO)
 // Output Redirection with dup2(pipefd[1], STDOUT_FILENO)
 // anything cmd1 writes to standard output will go into the pipe.
+// exit success (returns 0), exit failure (returns != 0)
