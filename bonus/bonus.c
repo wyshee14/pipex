@@ -6,7 +6,7 @@
 /*   By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/05 15:24:22 by wshee             #+#    #+#             */
-/*   Updated: 2025/02/06 19:00:42 by wshee            ###   ########.fr       */
+/*   Updated: 2025/02/07 19:16:05 by wshee            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,12 @@
 
 void create_child_process(char *cmd, char **env, t_pipex *data, int **pipefd, int i)
 {
-    pid_t pid;
+    //pid_t pid;
 
-    pid = fork();
-    if (pid < 0)
+    data->pid = fork();
+    if (data->pid < 0)
         error_and_exit("Fork error! \n");
-    if (pid == 0)
+    if (data->pid == 0)
     {
         dup2_input(data, pipefd, i);
         dup2_output(data, pipefd, i);
@@ -29,7 +29,7 @@ void create_child_process(char *cmd, char **env, t_pipex *data, int **pipefd, in
             close(pipefd[j][1]);
         }
 		execute_command(cmd, env);
-        exit(EXIT_SUCCESS);
+        // exit(EXIT_SUCCESS);
     }
     else //parent process
     {
@@ -132,11 +132,24 @@ int main (int ac, char **av, char **env)
 		data.cmd_index++;
 	}
 	// wait(NULL);
-	i = -1;
-	while (++i < data.cmd_count)
-		wait(NULL);
+	i = 0;
+	int	status;
+	pid_t pid;
+	int exit_code;
+	while (i < data.cmd_count)
+	{
+		pid = waitpid(data.pid[i], status, 0);
+		printf("status %d\n", status);
+		if (pid == -1)
+			error_and_exit("wait");
+		if (WIFEXITED(status))
+			exit_code = WEXITSTATUS(status);
+			// exit_code = status;
+		else if (WIFSIGNALED(status))
+			exit_code = 128 + WTERMSIG(status);
+		i++;
+	}
+	// unlink(".tmp");
 	free_2d((void **)pipefd);
-    //child_process2(av[ac-2], env, pipefd, &data);
-	unlink(".tmp");
-	exit(EXIT_SUCCESS);
+	exit(exit_code);
 }

@@ -6,7 +6,7 @@
 /*   By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/05 15:14:19 by wshee             #+#    #+#             */
-/*   Updated: 2025/02/06 19:42:48 by wshee            ###   ########.fr       */
+/*   Updated: 2025/02/07 15:59:57 by wshee            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 void error_and_exit(char *message)
 {
-	//printf("Exiting program\n");
+	printf("Exiting program\n");
 	perror(message);
 	exit(EXIT_FAILURE);
 }

@@ -13,7 +13,12 @@ void child_process1(char **av, char **env, int *fd)
         close (fd[0]);
         infile = open(av[1], O_RDONLY);
         if (infile == -1)
-            error_and_exit("Failed to open infile.\n");
+		{
+            perror("Failed to open infile.");
+			infile = open("/dev/null", O_RDONLY);
+			if(infile == -1)
+				error_and_exit("Failed to open /dev/null");
+		}
         dup2(infile, STDIN_FILENO);
         close(infile);
         dup2(fd[1], STDOUT_FILENO);

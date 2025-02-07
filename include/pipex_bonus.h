@@ -6,7 +6,7 @@
 /*   By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 19:18:05 by wshee             #+#    #+#             */
-/*   Updated: 2025/02/06 16:53:57 by wshee            ###   ########.fr       */
+/*   Updated: 2025/02/07 19:05:45 by wshee            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ typedef struct s_pipex
 	int cmd_index;
 	int cmd_count;
 	int pipe_count;
-	//int **pipefd;
+	pid_t pid;
 }				t_pipex;
 
 //Utils1

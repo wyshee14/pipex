@@ -6,29 +6,30 @@
 /*   By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/05 15:14:19 by wshee             #+#    #+#             */
-/*   Updated: 2025/02/06 21:10:33 by wshee            ###   ########.fr       */
+/*   Updated: 2025/02/07 18:57:24 by wshee            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "../include/pipex_bonus.h"
+# include <errno.h>
 
 void error_and_exit(char *message)
 {
-	printf("Exiting program...\n");
+	// printf("Exiting program...\n");
 	perror(message);
-	exit(EXIT_FAILURE);
+	exit(1);
 }
 
 void free_2d(void **arr)
 {
-    int i;
+	int i;
 
-    i = 0;
-    while (arr[i])
-    {
-        free(arr[i]);
-        i++;
-    }
+	i = 0;
+	while (arr[i])
+	{
+		free(arr[i]);
+		i++;
+	}
 	free(arr);
 }
 
@@ -98,21 +99,25 @@ void execute_command(char *cmd, char **env)
 	// write(2, cmd, ft_strlen(cmd));
 	// write(2, "\n", 1);
     args = ft_split(cmd, ' ');
-	for(int i = 0; args[i] != NULL; i++)
-	{
-		printf("args[%d]: %s\n", i, args[i]);
-		// write(2, cmd, ft_strlen(args[i]));
-		// write(2, "\n", 1);
-	}
+	// for(int i = 0; args[i] != NULL; i++)
+	// {
+	// 	printf("args[%d]: %s\n", i, args[i]);
+	// 	// write(2, cmd, ft_strlen(args[i]));
+	// 	// write(2, "\n", 1);
+	// }
     path = fetch_path(args[0], env);
-    printf("%s\n", path);
+    //printf("%s\n", path);
 	// write(2, path, ft_strlen(path));
 	// write(2, "\n", 1);
     if (!path)
     {
         free_2d((void **)args);
-        error_and_exit("Command not found.\n");
+        error_and_exit("Command not found.");
     }
     if ((execve(path, args, env)) == -1)
-        error_and_exit("Execve error.\n");
+	{
+        free(path);
+		free_2d((void **)args);
+		error_and_exit("Execve error.\n");
+	}
 }

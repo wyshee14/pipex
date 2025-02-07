@@ -6,7 +6,7 @@
 /*   By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/06 16:43:52 by wshee             #+#    #+#             */
-/*   Updated: 2025/02/06 19:39:41 by wshee            ###   ########.fr       */
+/*   Updated: 2025/02/07 16:46:10 by wshee            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,13 +45,23 @@ void dup2_output(t_pipex *data, int **pipefd, int i)
 void	open_files(t_pipex *data, int ac, char **av)
 {
 	if (data->is_heredoc == 1)
+	{
 		data->infile = open(".tmp", O_RDONLY);
+		data->outfile = open(av[ac - 1], O_CREAT | O_RDWR | O_APPEND, 0777);
+	}
 	else if (data->is_heredoc == 0)
+	{
 		data->infile = open(av[1], O_RDONLY);
+    	data->outfile = open(av[ac - 1], O_CREAT | O_RDWR | O_TRUNC, 0777);
+	}
 	//printf("infile fd: %d\n", data->infile);
     if (data->infile == -1)
-        error_and_exit("Failed to open infile.\n");
-    data->outfile = open(av[ac - 1], O_CREAT | O_RDWR | O_TRUNC, 0777);
+	{
+        perror("Failed to open infile.\n");
+		data->infile = open("/dev/null", O_RDONLY);
+		if(data->infile == -1)
+			error_and_exit("Failed to open /dev/null");
+	}
     //printf("outfile fd: %d\n", data->outfile);
     if (data->outfile == -1)
         error_and_exit("Failed to open outfile.\n");

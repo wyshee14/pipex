@@ -6,7 +6,7 @@
 /*   By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/24 13:28:33 by wshee             #+#    #+#             */
-/*   Updated: 2025/01/13 16:45:02 by wshee            ###   ########.fr       */
+/*   Updated: 2025/02/07 14:40:12 by wshee            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,8 +32,11 @@ char	*next_line(char *buffer)
 		return (NULL);
 	}
 	line = ft_substr(buffer, i + 1, ft_strlen(buffer) - i);
-	if (line == NULL)
-		return (NULL);
+	if (line == NULL || line[0] == '\0')
+	{
+		free(line);
+		line = NULL;
+	}
 	free (buffer);
 	return (line);
 }
