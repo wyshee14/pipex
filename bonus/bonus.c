@@ -14,12 +14,12 @@
 
 void create_child_process(char *cmd, char **env, t_pipex *data, int **pipefd, int i)
 {
-    //pid_t pid;
+    pid_t pid;
 
-    data->pid = fork();
-    if (data->pid < 0)
+    pid = fork();
+    if (pid < 0)
         error_and_exit("Fork error! \n");
-    if (data->pid == 0)
+    if (pid == 0)
     {
         dup2_input(data, pipefd, i);
         dup2_output(data, pipefd, i);
@@ -29,7 +29,7 @@ void create_child_process(char *cmd, char **env, t_pipex *data, int **pipefd, in
             close(pipefd[j][1]);
         }
 		execute_command(cmd, env);
-        // exit(EXIT_SUCCESS);
+        exit(EXIT_FAILURE);
     }
     else //parent process
     {
@@ -138,7 +138,7 @@ int main (int ac, char **av, char **env)
 	int exit_code;
 	while (i < data.cmd_count)
 	{
-		pid = waitpid(data.pid[i], status, 0);
+		pid = wait(&status);
 		printf("status %d\n", status);
 		if (pid == -1)
 			error_and_exit("wait");

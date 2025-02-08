@@ -28,7 +28,7 @@ typedef struct s_pipex
 	int cmd_index;
 	int cmd_count;
 	int pipe_count;
-	pid_t pid;
+	//pid_t pid;
 }				t_pipex;
 
 //Utils1

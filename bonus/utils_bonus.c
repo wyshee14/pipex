@@ -120,4 +120,14 @@ void execute_command(char *cmd, char **env)
 		free_2d((void **)args);
 		error_and_exit("Execve error.\n");
 	}
+	if(errno == ENOENT)
+	{
+		printf("Error command xxx\n");
+		exit(127);
+	}
+	else
+	{
+		perror("execve");
+		exit(126);
+	}
 }
