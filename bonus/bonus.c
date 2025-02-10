@@ -6,38 +6,90 @@
 /*   By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/05 15:24:22 by wshee             #+#    #+#             */
-/*   Updated: 2025/02/07 19:16:05 by wshee            ###   ########.fr       */
+/*   Updated: 2025/02/10 16:07:14 by wshee            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "../include/pipex_bonus.h"
 
-void create_child_process(char *cmd, char **env, t_pipex *data, int **pipefd, int i)
+// void wait_for_children(t_pipex *data)
+// {
+// 	int	status;
+// 	pid_t pid;
+// 	int exit_code;
+// 	int i;
+
+// 	i = 0;
+// 	while (i < data->cmd_count)
+// 	{
+// 		pid = wait(&status);
+// 		printf("status %d\n", status);
+// 		if (pid == -1)
+// 			error_and_exit("wait failed");
+// 		if (WIFEXITED(status))
+// 			exit_code = WEXITSTATUS(status);
+// 			// exit_code = status;
+// 		else if (WIFSIGNALED(status))
+// 			exit_code = 128 + WTERMSIG(status);
+// 		i++;
+// 	}
+// 	exit(exit_code);
+// }
+
+void create_child_process(char **av, char **env, t_pipex *data, int **pipefd)
 {
     pid_t pid;
+	int i;
 
-    pid = fork();
-    if (pid < 0)
-        error_and_exit("Fork error! \n");
-    if (pid == 0)
-    {
-        dup2_input(data, pipefd, i);
-        dup2_output(data, pipefd, i);
-		for (int j = 0; j < data->cmd_count - 1; j++)
-        {
-            close(pipefd[j][0]);
-            close(pipefd[j][1]);
-        }
-		execute_command(cmd, env);
-        exit(EXIT_FAILURE);
-    }
-    else //parent process
-    {
-        if (i > 0)
-			close(pipefd[i - 1][0]);
-		if (i < data->cmd_count - 1)
-        	close(pipefd[i][1]);
+	i = 0;
+	while (i < data->cmd_count)
+	{
+        //printf("i:%d, cmd_index:%d, cmd_count: %d\n", i, data.cmd_index, data.cmd_count);
+		pid = fork();
+		if (pid < 0)
+			error_and_exit("Fork error! \n");
+		if (pid == 0)
+		{
+			dup2_input(data, pipefd, i);
+			dup2_output(data, pipefd, i);
+			for (int j = 0; j < data->cmd_count - 1; j++)
+			{
+				close(pipefd[j][0]);
+				close(pipefd[j][1]);
+			}
+			execute_command(av[data->cmd_index], env);
+			exit(EXIT_FAILURE);
+		}
+		i++;
+		data->cmd_index++;
 	}
+    //parent process
+    // if (i > 0)
+	// 	close(pipefd[i - 1][0]);
+	// if (i < data->cmd_count - 1)
+    //     close(pipefd[i][1]);
+	for (int j = 0; j < data->cmd_count - 1; j++)
+    {
+        close(pipefd[j][0]);
+        close(pipefd[j][1]);
+    }
+	//wait(NULL);
+	//wait_for_children(data);
+	int status;
+	while((pid = waitpid(0, &status, 0)) > 0)
+	{
+		printf("Parent: Child (PID: %d) terminated\n", pid);
+		if (WIFEXITED(status))
+			printf("Child exited normally with status %d\n", WEXITSTATUS(status));
+		else if (WIFSIGNALED(status))
+			printf("Child was terminated by signal %d\n", WEXITSTATUS(status));
+		printf("test0 [%d]\n", WEXITSTATUS(status));
+	}
+	printf("test1 [%d]\n", WEXITSTATUS(status));
+	exit(WEXITSTATUS(status));
+	printf("TEST2 [%d]\n", WEXITSTATUS(status));
+	if (pid == -1 && errno != ECHILD)
+		error_and_exit("waitpid failed");
 }
 
 int **init_pipes(t_pipex *data, int **pipefd)
@@ -112,7 +164,7 @@ int main (int ac, char **av, char **env)
 {
 	t_pipex data;
 	int **pipefd;
-	int i;
+	//int i;
 
 	pipefd = NULL;
 	if(ac < 5)
@@ -123,33 +175,17 @@ int main (int ac, char **av, char **env)
 	pipefd = init_pipes(&data, pipefd);
 	//printf("Pipe Initialized done\n");
     //child_process1(av, env, fd, &data);
-	i = 0;
-	while (i < data.cmd_count)
-	{
-        //printf("i:%d, cmd_index:%d, cmd_count: %d\n", i, data.cmd_index, data.cmd_count);
-		create_child_process(av[data.cmd_index], env, &data, pipefd, i);
-		i++;
-		data.cmd_index++;
-	}
+	create_child_process(av, env, &data, pipefd);
+	// i = 0;
+	// while (i < data.cmd_count)
+	// {
+    //     //printf("i:%d, cmd_index:%d, cmd_count: %d\n", i, data.cmd_index, data.cmd_count);
+	// 	i++;
+	// 	data.cmd_index++;
+	// }
 	// wait(NULL);
-	i = 0;
-	int	status;
-	pid_t pid;
-	int exit_code;
-	while (i < data.cmd_count)
-	{
-		pid = wait(&status);
-		printf("status %d\n", status);
-		if (pid == -1)
-			error_and_exit("wait");
-		if (WIFEXITED(status))
-			exit_code = WEXITSTATUS(status);
-			// exit_code = status;
-		else if (WIFSIGNALED(status))
-			exit_code = 128 + WTERMSIG(status);
-		i++;
-	}
-	// unlink(".tmp");
+	//i = 0;
+	unlink(".tmp");
 	free_2d((void **)pipefd);
-	exit(exit_code);
+	exit(EXIT_SUCCESS);
 }
