@@ -6,13 +6,13 @@
 /*   By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/05 15:24:22 by wshee             #+#    #+#             */
-/*   Updated: 2025/02/10 18:24:46 by wshee            ###   ########.fr       */
+/*   Updated: 2025/02/10 21:26:28 by wshee            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "../include/pipex_bonus.h"
 
-void create_child_process(char *cmd, char **env, t_pipex *data, int **pipefd, int i, pid_t *pid)
+void create_child_process(char *cmd, char **env, t_pipex *data, int i, pid_t *pid)
 {
     //pid_t pid;
 
@@ -21,12 +21,12 @@ void create_child_process(char *cmd, char **env, t_pipex *data, int **pipefd, in
         error_and_exit("Fork error! \n");
     if (*pid == 0)
     {
-        dup2_input(data, pipefd, i);
-        dup2_output(data, pipefd, i);
+        dup2_input(data, data->pipefd, i);
+        dup2_output(data, data->pipefd, i);
 		for (int j = 0; j < data->cmd_count - 1; j++)
         {
-            close(pipefd[j][0]);
-            close(pipefd[j][1]);
+            close(data->pipefd[j][0]);
+            close(data->pipefd[j][1]);
         }
 		execute_command(cmd, env);
         exit(EXIT_FAILURE);
@@ -34,31 +34,39 @@ void create_child_process(char *cmd, char **env, t_pipex *data, int **pipefd, in
     else //parent process
     {
         if (i > 0)
-			close(pipefd[i - 1][0]);
+			close(data->pipefd[i - 1][0]);
 		if (i < data->cmd_count - 1)
-        	close(pipefd[i][1]);
+        	close(data->pipefd[i][1]);
 	}
 }
 
-int **init_pipes(t_pipex *data, int **pipefd)
+int **init_pipes(t_pipex *data)
 {
     int i;
 
 	// Allocate memory for pipefd
-    pipefd = (int **)malloc((data->cmd_count) * sizeof(int *));
-    if(!pipefd)
-        error_and_exit("Pipe error\n");
+    data->pipefd = (int **)malloc((data->cmd_count) * sizeof(int *));
+    if(!data->pipefd)
+        error_and_exit("Pipe allocation error.\n");
     i = 0;
     //printf("Initializing pipes\n");
     while (i < data->cmd_count - 1)
     {
-        pipefd[i] = (int *)malloc(2 * sizeof(int));
-        if(pipe(pipefd[i]) == -1)
-            error_and_exit("Pipe error\n");
+        data->pipefd[i] = (int *)malloc(2 * sizeof(int));
+		if (!data->pipefd[i])
+		{
+			free_2d((void **)(data->pipefd));
+			error_and_exit("Pipe allocation error.\n");
+		}
+        if (pipe(data->pipefd[i]) == -1)
+		{
+            free_2d((void **)(data->pipefd));
+			error_and_exit("Pipe creation error.\n");
+		}
         i++;
     }
-	pipefd[i] = NULL;
-	return(pipefd);
+	data->pipefd[i] = NULL;
+	return(data->pipefd);
 }
 
 // get next line will extract the line and
@@ -111,29 +119,34 @@ void	handle_input(int ac, char **av, t_pipex *data)
 int main (int ac, char **av, char **env)
 {
 	t_pipex data;
-	int **pipefd;
+	// int **pipefd;
 	int i;
 	pid_t pid = 0;
 
-	pipefd = NULL;
+	//pipefd = NULL;
 	if(ac < 5)
 		error_and_exit("Usage: ./pipex file1 cmd1 cmd2 file2\n");
 	init_data(&data);
 	handle_input(ac, av, &data);
 	open_files(&data, ac, av);
-	pipefd = init_pipes(&data, pipefd);
-	//printf("Pipe Initialized done\n");
+	data.pipefd = init_pipes(&data);
+	if(!data.pipefd)
+	{
+		close(data.infile);
+		close(data.outfile);
+	}
+	// printf("Pipe Initialized done\n");
     //child_process1(av, env, fd, &data);
 	i = 0;
 	while (i < data.cmd_count)
 	{
         //printf("i:%d, cmd_index:%d, cmd_count: %d\n", i, data.cmd_index, data.cmd_count);
-		create_child_process(av[data.cmd_index], env, &data, pipefd, i, &pid);
+		create_child_process(av[data.cmd_index], env, &data, i, &pid);
 		int status = 0;
 		if (i == data.cmd_count - 1)
 		{
-			printf("status: %d", status);
-			printf("infile error: %d\n", data.infile_error);
+			// printf("status: %d", status);
+			// printf("infile error: %d\n", data.infile_error);
 
 			waitpid(pid, &status, 0);
 			if (data.infile_error)
@@ -163,6 +176,10 @@ int main (int ac, char **av, char **env)
 	// 	i++;
 	// }
 	// unlink(".tmp");
-	free_2d((void **)pipefd);
+	if (data.pipefd)
+	{
+		free_2d((void **)(data.pipefd));
+		data.pipefd = NULL;
+	}
 	exit(EXIT_SUCCESS);
 }

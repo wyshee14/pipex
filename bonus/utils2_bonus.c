@@ -6,7 +6,7 @@
 /*   By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/06 16:43:52 by wshee             #+#    #+#             */
-/*   Updated: 2025/02/10 18:16:21 by wshee            ###   ########.fr       */
+/*   Updated: 2025/02/10 20:52:35 by wshee            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ void	open_files(t_pipex *data, int ac, char **av)
 		data->infile = open(av[1], O_RDONLY);
     	data->outfile = open(av[ac - 1], O_CREAT | O_RDWR | O_TRUNC, 0777);
 	}
-	//printf("infile fd: %d\n", data->infile);
+	// printf("infile fd: %d\n", data->infile);
     if (data->infile == -1)
 	{
         data->infile_error++;
@@ -76,5 +76,5 @@ void init_data(t_pipex *data)
     // data->is_heredoc = 0;
     // data->cmd_index = 0;
     // data->cmd_count = 0;
-    // data->pipe_count = 0;
+    data->pipefd = NULL;
 }
