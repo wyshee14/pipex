@@ -6,7 +6,7 @@
 /*   By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/05 15:24:22 by wshee             #+#    #+#             */
-/*   Updated: 2025/02/10 21:26:28 by wshee            ###   ########.fr       */
+/*   Updated: 2025/02/11 16:47:29 by wshee            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 void create_child_process(char *cmd, char **env, t_pipex *data, int i, pid_t *pid)
 {
     //pid_t pid;
+	int i;
 
     *pid = fork();
     if (*pid < 0)
@@ -141,19 +142,7 @@ int main (int ac, char **av, char **env)
 	while (i < data.cmd_count)
 	{
         //printf("i:%d, cmd_index:%d, cmd_count: %d\n", i, data.cmd_index, data.cmd_count);
-		create_child_process(av[data.cmd_index], env, &data, i, &pid);
-		int status = 0;
-		if (i == data.cmd_count - 1)
-		{
-			// printf("status: %d", status);
-			// printf("infile error: %d\n", data.infile_error);
-
-			waitpid(pid, &status, 0);
-			if (data.infile_error)
-				exit(1);
-			else
-				exit(WEXITSTATUS(status));
-		}
+		create_child_process(av[data.cmd_index], env, &data, pipefd, i);
 		i++;
 		data.cmd_index++;
 	}
