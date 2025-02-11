@@ -6,7 +6,7 @@
 /*   By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/06 16:43:52 by wshee             #+#    #+#             */
-/*   Updated: 2025/02/07 16:46:10 by wshee            ###   ########.fr       */
+/*   Updated: 2025/02/11 16:26:32 by wshee            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,19 +60,41 @@ void	open_files(t_pipex *data, int ac, char **av)
         perror("Failed to open infile.\n");
 		data->infile = open("/dev/null", O_RDONLY);
 		if(data->infile == -1)
-			error_and_exit("Failed to open /dev/null");
+			error_and_exit("Failed to open /dev/null", data);
 	}
     //printf("outfile fd: %d\n", data->outfile);
     if (data->outfile == -1)
-        error_and_exit("Failed to open outfile.\n");
+        error_and_exit("Failed to open outfile.\n", data);
+}
+
+int **init_pipes(t_pipex *data)
+{
+    int i;
+
+	// Allocate memory for pipefd
+    data->pipefd = (int **)malloc((data->cmd_count) * sizeof(int *));
+    if (!data->pipefd)
+        error_and_exit("Pipe error\n", data);
+    i = 0;
+    //printf("Initializing pipes\n");
+    while (i < data->cmd_count - 1)
+    {
+        data->pipefd[i] = (int *)malloc(2 * sizeof(int));
+        if(pipe(data->pipefd[i]) == -1)
+            error_and_exit("Pipe error\n", data);
+        i++;
+    }
+	data->pipefd[i] = NULL;
+	return(data->pipefd);
 }
 
 void init_data(t_pipex *data)
 {
-    data->infile = 0;
-    data->outfile = 0;
-    data->is_heredoc = 0;
-    data->cmd_index = 0;
-    data->cmd_count = 0;
-    data->pipe_count = 0;
+    ft_memset(data, 0, sizeof(t_pipex));
+	// data->infile = 0;
+    // data->outfile = 0;
+    // data->is_heredoc = 0;
+    // data->cmd_index = 0;
+    // data->cmd_count = 0;
+    // data->pipe_count = 0;
 }

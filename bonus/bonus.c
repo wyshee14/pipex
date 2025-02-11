@@ -6,7 +6,7 @@
 /*   By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/05 15:24:22 by wshee             #+#    #+#             */
-/*   Updated: 2025/02/11 14:23:33 by wshee            ###   ########.fr       */
+/*   Updated: 2025/02/11 16:17:50 by wshee            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ void create_child_process(char *cmd, char **env, t_pipex *data, int i)
 
     pid = fork();
     if (pid < 0)
-        error_and_exit("Fork error! \n");
+        error_and_exit("Fork error! \n", data);
     if (pid == 0)
     {
         dup2_input(data, data->pipefd, i);
@@ -28,7 +28,7 @@ void create_child_process(char *cmd, char **env, t_pipex *data, int i)
             close(data->pipefd[j][0]);
             close(data->pipefd[j][1]);
         }
-		execute_command(cmd, env);
+		execute_command(cmd, env, data);
         exit(EXIT_FAILURE);
     }
     else //parent process
@@ -38,27 +38,6 @@ void create_child_process(char *cmd, char **env, t_pipex *data, int i)
 		if (i < data->cmd_count - 1)
         	close(data->pipefd[i][1]);
 	}
-}
-
-int **init_pipes(t_pipex *data)
-{
-    int i;
-
-	// Allocate memory for pipefd
-    data->pipefd = (int **)malloc((data->cmd_count) * sizeof(int *));
-    if(!data->pipefd)
-        error_and_exit("Pipe error\n");
-    i = 0;
-    //printf("Initializing pipes\n");
-    while (i < data->cmd_count - 1)
-    {
-        data->pipefd[i] = (int *)malloc(2 * sizeof(int));
-        if(pipe(data->pipefd[i]) == -1)
-            error_and_exit("Pipe error\n");
-        i++;
-    }
-	data->pipefd[i] = NULL;
-	return(data->pipefd);
 }
 
 // get next line will extract the line and
@@ -71,7 +50,7 @@ void ft_here_doc(int ac, char *limiter, t_pipex *data)
 
 	data->infile = open(".tmp", O_CREAT | O_RDWR | O_TRUNC, 0777);
 	if (data->infile == -1)
-		error_and_exit("No such file or directory\n");
+		error_and_exit("No such file or directory\n", data);
 	while (1)
 	{
 		ft_putstr_fd("heredoc > ", 1);
@@ -93,12 +72,12 @@ void	handle_input(int ac, char **av, t_pipex *data)
 	if (ft_strncmp(av[1], "here_doc", 8) == 0)
 	{
 		if (ac < 6)
-			error_and_exit("Usage: ./pipex here_doc LIMITER cmd1 cmd2 outfile\n");
+			error_and_exit("Usage: ./pipex here_doc LIMITER cmd1 cmd2 outfile\n", data);
 		data->is_heredoc = 1;
         data->cmd_index = 3;
 		data->cmd_count = ac - 4;
 		if (!av[2] || av[2][0] == '\0')
-			error_and_exit("Error: No delimiter is found\n");
+			error_and_exit("Error: No delimiter is found\n", data);
 		ft_here_doc(ac, av[2], data);
 	}
 	else
@@ -116,7 +95,7 @@ int main (int ac, char **av, char **env)
 
 	//pipefd = NULL;
 	if(ac < 5)
-		error_and_exit("Usage: ./pipex file1 cmd1 cmd2 file2\n");
+		error_and_exit("Usage: ./pipex file1 cmd1 cmd2 file2\n", &data);
 	init_data(&data);
 	handle_input(ac, av, &data);
 	open_files(&data, ac, av);
@@ -141,7 +120,7 @@ int main (int ac, char **av, char **env)
 		pid = wait(&status);
 		printf("status %d\n", status);
 		if (pid == -1)
-			error_and_exit("wait");
+			error_and_exit("wait", &data);
 		if (WIFEXITED(status))
 			exit_code = WEXITSTATUS(status);
 			// exit_code = status;
@@ -149,7 +128,7 @@ int main (int ac, char **av, char **env)
 			exit_code = 128 + WTERMSIG(status);
 		i++;
 	}
-	// unlink(".tmp");
+	unlink(".tmp");
 	free_2d((void **)data.pipefd);
 	exit(exit_code);
 }
