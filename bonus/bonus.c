@@ -6,7 +6,7 @@
 /*   By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/05 15:24:22 by wshee             #+#    #+#             */
-/*   Updated: 2025/02/11 16:58:17 by wshee            ###   ########.fr       */
+/*   Updated: 2025/02/11 22:17:37 by wshee            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,13 +14,12 @@
 
 void create_child_process(char *cmd, char **env, t_pipex *data, int i)
 {
-    //pid_t pid;
-	int i;
+    // pid_t pid;
 
-    pid = fork();
-    if (pid < 0)
+    data->pid = fork();
+    if (data->pid < 0)
         error_and_exit("Fork error! \n", data);
-    if (pid == 0)
+    if (data->pid == 0)
     {
         dup2_input(data, data->pipefd, i);
         dup2_output(data, data->pipefd, i);
@@ -44,24 +43,34 @@ void create_child_process(char *cmd, char **env, t_pipex *data, int i)
 void wait_for_child(t_pipex *data, int *exit_code)
 {
 	int	status;
-	pid_t pid;
-	//int exit_code;
-	int i;
+	// // pid_t pid;
+	// //int exit_code;
+	// int i;
 
-	i = 0;
-	while (i < data->cmd_count)
-	{
-		pid = wait(&status);
-		printf("status %d\n", status);
-		if (pid == -1)
+	// i = 0;
+	// while (i < data->cmd_count)
+	// {
+		// pid = wait(&status);
+		waitpid(data->pid, &status, 0);
+		// printf("status %d, pid: %d\n", status, data->pid);
+		// while (pid != NULL)
+		// 	return ;
+		if (data->pid == -1)
 			error_and_exit("wait error\n", data);
+		if (data->outfile_error == 1)
+		{
+			if(data->pipefd)
+				free_2d((void **)(data->pipefd));
+			exit(1);
+		}
+		// printf("%d\n", WEXITSTATUS(status));
 		if (WIFEXITED(status))
 			*exit_code = WEXITSTATUS(status);
 			// exit_code = status;
 		else if (WIFSIGNALED(status))
 			*exit_code = 128 + WTERMSIG(status);
-		i++;
-	}
+	// 	i++;
+	// }
 }
 
 // get next line will extract the line and
@@ -117,10 +126,14 @@ int main (int ac, char **av, char **env)
 	//int **pipefd;
 	int i;
 	int exit_code;
+	// pid_t pid;
 
 	//pipefd = NULL;
-	if(ac < 5)
-		error_and_exit("Usage: ./pipex file1 cmd1 cmd2 file2\n", &data);
+	if (ac < 5)
+	{
+		perror("Usage: ./pipex file1 cmd1 cmd2 file2\n");
+		exit(1);
+	}
 	init_data(&data);
 	handle_input(ac, av, &data);
 	open_files(&data, ac, av);
@@ -132,12 +145,28 @@ int main (int ac, char **av, char **env)
 	{
         //printf("i:%d, cmd_index:%d, cmd_count: %d\n", i, data.cmd_index, data.cmd_count);
 		create_child_process(av[data.cmd_index], env, &data, i);
+		// int status = 0;
+		// if (i == data.cmd_count - 1)
+		// {
+		// 	// printf("status: %d", status);
+		// 	// printf("infile error: %d\n", data.infile_error);
+
+		// 	waitpid(pid, &status, 0);
+		// 	if (data.infile_error == 1 || data.outfile_error == 1)
+		// 		exit(1);
+		// 	else
+		// 		exit(WEXITSTATUS(status));
+		// }
 		i++;
 		data.cmd_index++;
 	}
 	// wait(NULL);
 	wait_for_child(&data, &exit_code);
 	unlink(".tmp");
+	while (wait(NULL) != -1)
+		;
 	free_2d((void **)data.pipefd);
 	exit(exit_code);
 }
+
+// wait

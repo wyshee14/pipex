@@ -6,7 +6,7 @@
 /*   By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/05 15:14:19 by wshee             #+#    #+#             */
-/*   Updated: 2025/02/11 16:58:43 by wshee            ###   ########.fr       */
+/*   Updated: 2025/02/11 22:16:26 by wshee            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,10 @@ void error_and_exit(char *message, t_pipex *data)
 	if(data->pipefd)
 		free_2d((void **)(data->pipefd));
 	perror(message);
-	exit(1);
+	if (data->exit127)
+		exit(data->exit127);
+	else
+		exit(1);
 }
 
 void free_2d(void **arr)
@@ -113,6 +116,7 @@ void execute_command(char *cmd, char **env, t_pipex *data)
 	// write(2, "\n", 1);
     if (!path)
     {
+		data->exit127 = 127;
         free_2d((void **)args);
         error_and_exit("Command not found.", data);
     }

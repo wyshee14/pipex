@@ -6,7 +6,7 @@
 #    By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/12/23 20:31:35 by wshee             #+#    #+#              #
-#    Updated: 2025/02/07 14:07:43 by wshee            ###   ########.fr        #
+#    Updated: 2025/02/11 22:15:02 by wshee            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -27,7 +27,7 @@ SRC_DIR = src/
 BONUS_DIR = bonus/
 INC = -I$(INC_DIR)
 
-CC = cc -g3 #-O0 -fsanitize=address
+CC = cc #-g3 #-O0 -fsanitize=address
 CFLAGS = -Wall -Wextra -Werror -I$(INC_DIR) -I$(LIBFT_DIR)
 
 #Source Files

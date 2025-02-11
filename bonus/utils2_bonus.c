@@ -6,7 +6,7 @@
 /*   By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/06 16:43:52 by wshee             #+#    #+#             */
-/*   Updated: 2025/02/11 16:59:17 by wshee            ###   ########.fr       */
+/*   Updated: 2025/02/11 21:26:15 by wshee            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,8 @@ void dup2_output(t_pipex *data, int **pipefd, int i)
 	if (i == data->cmd_count - 1)
 	{
 		//printf("dup2 output\n");
+		if (data->outfile_error == 1)
+			perror("Failed to open outfile.\n");
 		dup2(data->outfile, STDOUT_FILENO);
 		close(data->outfile);
 	}
@@ -65,7 +67,8 @@ void	open_files(t_pipex *data, int ac, char **av)
 	}
     //printf("outfile fd: %d\n", data->outfile);
     if (data->outfile == -1)
-        error_and_exit("Failed to open outfile.\n", data);
+		data->outfile_error = 1;
+        // error_and_exit("Failed to open outfile.\n", data);
 }
 
 int **init_pipes(t_pipex *data)
