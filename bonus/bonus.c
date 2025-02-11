@@ -6,7 +6,7 @@
 /*   By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/05 15:24:22 by wshee             #+#    #+#             */
-/*   Updated: 2025/02/11 16:17:50 by wshee            ###   ########.fr       */
+/*   Updated: 2025/02/11 16:40:56 by wshee            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,29 @@ void create_child_process(char *cmd, char **env, t_pipex *data, int i)
 			close(data->pipefd[i - 1][0]);
 		if (i < data->cmd_count - 1)
         	close(data->pipefd[i][1]);
+	}
+}
+
+void wait_for_child(t_pipex *data, int *exit_code)
+{
+	int	status;
+	pid_t pid;
+	//int exit_code;
+	int i;
+
+	i = 0;
+	while (i < data->cmd_count)
+	{
+		pid = wait(&status);
+		printf("status %d\n", status);
+		if (pid == -1)
+			error_and_exit("wait error\n", data);
+		if (WIFEXITED(status))
+			*exit_code = WEXITSTATUS(status);
+			// exit_code = status;
+		else if (WIFSIGNALED(status))
+			*exit_code = 128 + WTERMSIG(status);
+		i++;
 	}
 }
 
@@ -92,6 +115,7 @@ int main (int ac, char **av, char **env)
 	t_pipex data;
 	//int **pipefd;
 	int i;
+	int exit_code;
 
 	//pipefd = NULL;
 	if(ac < 5)
@@ -111,23 +135,7 @@ int main (int ac, char **av, char **env)
 		data.cmd_index++;
 	}
 	// wait(NULL);
-	i = 0;
-	int	status;
-	pid_t pid;
-	int exit_code;
-	while (i < data.cmd_count)
-	{
-		pid = wait(&status);
-		printf("status %d\n", status);
-		if (pid == -1)
-			error_and_exit("wait", &data);
-		if (WIFEXITED(status))
-			exit_code = WEXITSTATUS(status);
-			// exit_code = status;
-		else if (WIFSIGNALED(status))
-			exit_code = 128 + WTERMSIG(status);
-		i++;
-	}
+	wait_for_child(&data, &exit_code);
 	unlink(".tmp");
 	free_2d((void **)data.pipefd);
 	exit(exit_code);

@@ -6,7 +6,7 @@
 /*   By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/06 16:43:52 by wshee             #+#    #+#             */
-/*   Updated: 2025/02/11 16:26:32 by wshee            ###   ########.fr       */
+/*   Updated: 2025/02/11 16:39:08 by wshee            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,8 @@ void	open_files(t_pipex *data, int ac, char **av)
 	//printf("infile fd: %d\n", data->infile);
     if (data->infile == -1)
 	{
-        perror("Failed to open infile.\n");
+        data->infile_error = 1;
+		perror("Failed to open infile.\n");
 		data->infile = open("/dev/null", O_RDONLY);
 		if(data->infile == -1)
 			error_and_exit("Failed to open /dev/null", data);
