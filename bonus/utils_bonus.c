@@ -6,16 +6,18 @@
 /*   By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/05 15:14:19 by wshee             #+#    #+#             */
-/*   Updated: 2025/02/10 21:16:00 by wshee            ###   ########.fr       */
+/*   Updated: 2025/02/11 16:58:43 by wshee            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "../include/pipex_bonus.h"
 # include <errno.h>
 
-void error_and_exit(char *message)
+void error_and_exit(char *message, t_pipex *data)
 {
 	// printf("Exiting program...\n");
+	if(data->pipefd)
+		free_2d((void **)(data->pipefd));
 	perror(message);
 	exit(1);
 }
@@ -91,7 +93,7 @@ char *fetch_path(char *cmd, char ** env)
     return(path);
 }
 
-void execute_command(char *cmd, char **env)
+void execute_command(char *cmd, char **env, t_pipex *data)
 {
     char **args;
     char *path;
@@ -112,13 +114,13 @@ void execute_command(char *cmd, char **env)
     if (!path)
     {
         free_2d((void **)args);
-        error_and_exit("Command not found.");
+        error_and_exit("Command not found.", data);
     }
     if ((execve(path, args, env)) == -1)
 	{
         free(path);
 		free_2d((void **)args);
-		error_and_exit("Execve error.\n");
+		error_and_exit("Execve error.\n", data);
 	}
 	if(errno == ENOENT)
 	{
