@@ -6,17 +6,16 @@
 /*   By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/06 16:43:52 by wshee             #+#    #+#             */
-/*   Updated: 2025/02/11 21:26:15 by wshee            ###   ########.fr       */
+/*   Updated: 2025/02/12 16:33:17 by wshee            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-# include "../include/pipex_bonus.h"
+#include "../include/pipex_bonus.h"
 
-void dup2_input(t_pipex *data, int **pipefd, int i)
+void	dup2_input(t_pipex *data, int **pipefd, int i)
 {
 	if (i == 0)
 	{
-		//printf("dup2 input\n");
 		dup2(data->infile, STDIN_FILENO);
 		close(data->infile);
 	}
@@ -27,13 +26,15 @@ void dup2_input(t_pipex *data, int **pipefd, int i)
 	}
 }
 
-void dup2_output(t_pipex *data, int **pipefd, int i)
+void	dup2_output(t_pipex *data, int **pipefd, int i)
 {
 	if (i == data->cmd_count - 1)
 	{
-		//printf("dup2 output\n");
 		if (data->outfile_error == 1)
+		{
 			perror("Failed to open outfile.\n");
+			exit(1);
+		}
 		dup2(data->outfile, STDOUT_FILENO);
 		close(data->outfile);
 	}
@@ -54,51 +55,45 @@ void	open_files(t_pipex *data, int ac, char **av)
 	else if (data->is_heredoc == 0)
 	{
 		data->infile = open(av[1], O_RDONLY);
-    	data->outfile = open(av[ac - 1], O_CREAT | O_RDWR | O_TRUNC, 0777);
+		data->outfile = open(av[ac - 1], O_CREAT | O_RDWR | O_TRUNC, 0777);
 	}
-	// printf("infile fd: %d\n", data->infile);
-    if (data->infile == -1)
+	if (data->infile == -1)
 	{
-        data->infile_error = 1;
+		data->infile_error = 1;
 		perror("Failed to open infile.\n");
 		data->infile = open("/dev/null", O_RDONLY);
-		if(data->infile == -1)
+		if (data->infile == -1)
 			error_and_exit("Failed to open /dev/null", data);
 	}
-    //printf("outfile fd: %d\n", data->outfile);
-    if (data->outfile == -1)
+	if (data->outfile == -1)
 		data->outfile_error = 1;
-        // error_and_exit("Failed to open outfile.\n", data);
 }
 
-int **init_pipes(t_pipex *data)
+// Initialize pipes based on how many commands -1
+// The array pipe_fd stores file descriptors for multiple pipes.
+int	**init_pipes(t_pipex *data)
 {
-    int i;
+	int	i;
 
-	// Allocate memory for pipefd
-    data->pipefd = (int **)malloc((data->cmd_count) * sizeof(int *));
-    if (!data->pipefd)
-        error_and_exit("Pipe error\n", data);
-    i = 0;
-    //printf("Initializing pipes\n");
-    while (i < data->cmd_count - 1)
-    {
-        data->pipefd[i] = (int *)malloc(2 * sizeof(int));
-        if(pipe(data->pipefd[i]) == -1)
-            error_and_exit("Pipe error\n", data);
-        i++;
-    }
+	data->pipefd = (int **)malloc((data->cmd_count) * sizeof(int *));
+	if (!data->pipefd)
+		error_and_exit("Pipe error\n", data);
+	i = 0;
+	while (i < data->cmd_count - 1)
+	{
+		data->pipefd[i] = (int *)malloc(2 * sizeof(int));
+		if (pipe(data->pipefd[i]) == -1)
+			error_and_exit("Pipe error\n", data);
+		i++;
+	}
 	data->pipefd[i] = NULL;
-	return(data->pipefd);
+	return (data->pipefd);
 }
 
-void init_data(t_pipex *data)
+void	init_data(t_pipex *data, int ac, char **av)
 {
-    ft_memset(data, 0, sizeof(t_pipex));
-	// data->infile = 0;
-    // data->outfile = 0;
-    // data->is_heredoc = 0;
-    // data->cmd_index = 0;
-    // data->cmd_count = 0;
-    // data->pipe_count = 0;
+	ft_memset(data, 0, sizeof(t_pipex));
+	handle_input(ac, av, data);
+	open_files(data, ac, av);
+	data->pipefd = init_pipes(data);
 }

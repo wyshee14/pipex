@@ -1,2 +1,0 @@
-error: Disk full
-error: File not found
