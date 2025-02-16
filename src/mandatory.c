@@ -6,7 +6,7 @@
 /*   By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/12 16:35:28 by wshee             #+#    #+#             */
-/*   Updated: 2025/02/12 17:38:11 by wshee            ###   ########.fr       */
+/*   Updated: 2025/02/16 13:31:14 by wshee            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,10 @@ void	open_infile(char **av, int *infile)
 // if success, pid of child returned to parent, 0 returned in child
 // if error, (-1) is returned in parent, no child process is created
 // child process writes to the pipe
+// input Redirection with dup2(infile, STDIN_FILENO)
+// output Redirection with dup2(pipefd[1], STDOUT_FILENO)
+// anything cmd1 writes to standard output will go into the pipe.
+// exit success (returns 0), exit failure (returns != 0)
 void	child_process1(char **av, char **env, int *fd)
 {
 	int		infile;
@@ -94,11 +98,6 @@ int	main(int ac, char **av, char **env)
 	child_process2(av, env, fd);
 	exit(EXIT_SUCCESS);
 }
-
-// input Redirection with dup2(infile, STDIN_FILENO)
-// output Redirection with dup2(pipefd[1], STDOUT_FILENO)
-// anything cmd1 writes to standard output will go into the pipe.
-// exit success (returns 0), exit failure (returns != 0)
 
 // pid_t data type is signed int representing process ID (PID)
 // read from infile, execute cmd1 with infile as input

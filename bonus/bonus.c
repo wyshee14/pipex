@@ -6,7 +6,7 @@
 /*   By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/05 15:24:22 by wshee             #+#    #+#             */
-/*   Updated: 2025/02/12 15:54:01 by wshee            ###   ########.fr       */
+/*   Updated: 2025/02/16 13:32:00 by wshee            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,13 @@ void	create_child_process(char *cmd, char **env, t_pipex *data, int i)
 	}
 }
 
+// WIFEXITED(status)
+// Checks if the child terminated normally (i.e., via exit() or return in main).
+// If true, WEXITSTATUS(status) retrieves the exit code.
+// WIFSIGNALED(status)
+// Checks if the child was terminated by a signal (e.g., SIGKILL, SIGSEGV).
+// If true, WTERMSIG(status) gets the signal number that caused termination.
+// The exit code is then set to 128 + signal_number, following convention.
 void	wait_for_child(t_pipex *data, int *exit_code)
 {
 	int	status;
@@ -137,4 +144,10 @@ int	main(int ac, char **av, char **env)
 	exit(exit_code);
 }
 
-// wait
+// fork all the number of child required based on the number of commands
+// after that finally wait the child to kill
+// (wait_for_child function)
+// wait for the last child to get the exit code of last command
+// wait(NULL) != -1 is wait for every child is killed before exits the program
+// unlink is to remove the temperary file created
+// lastly free the pipefd to avoid memory leaks

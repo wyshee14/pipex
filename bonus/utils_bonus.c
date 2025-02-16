@@ -6,7 +6,7 @@
 /*   By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/05 15:14:19 by wshee             #+#    #+#             */
-/*   Updated: 2025/02/12 16:19:05 by wshee            ###   ########.fr       */
+/*   Updated: 2025/02/12 20:12:11 by wshee            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ void	free_2d(void **arr)
 }
 
 // access, flag F_OK used to check for the existence of a file
-// if error (returns -1), access (returns 0)
+// if error (returns -1) errno is set, access (returns 0)
 char	*access_path(char **env_path, char *cmd)
 {
 	int		i;
@@ -91,6 +91,9 @@ char	*fetch_path(char *cmd, char **env)
 	return (path);
 }
 
+// execve() system call is used to execute a new program
+// Does not return on success (the calling process is replaced)
+// Returns -1 on failure and sets errno
 void	execute_command(char *cmd, char **env, t_pipex *data)
 {
 	char	**args;
