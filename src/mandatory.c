@@ -6,7 +6,7 @@
 /*   By: wshee <wshee@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/12 16:35:28 by wshee             #+#    #+#             */
-/*   Updated: 2025/02/16 13:31:14 by wshee            ###   ########.fr       */
+/*   Updated: 2025/03/25 15:47:15 by wshee            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,15 +33,14 @@ void	open_infile(char **av, int *infile)
 // output Redirection with dup2(pipefd[1], STDOUT_FILENO)
 // anything cmd1 writes to standard output will go into the pipe.
 // exit success (returns 0), exit failure (returns != 0)
-void	child_process1(char **av, char **env, int *fd)
+void	child_process1(char **av, char **env, int *fd, pid_t *pid1)
 {
 	int		infile;
-	pid_t	pid1;
 
-	pid1 = fork();
-	if (pid1 < 0)
+	*pid1 = fork();
+	if (*pid1 < 0)
 		error_and_exit ("Fork 1 error!", 1);
-	if (pid1 == 0)
+	if (*pid1 == 0)
 	{
 		close (fd[0]);
 		open_infile(av, &infile);
@@ -52,14 +51,10 @@ void	child_process1(char **av, char **env, int *fd)
 		execute_command(av[2], env);
 		exit(EXIT_FAILURE);
 	}
-	else
-	{
-		close (fd[1]);
-		wait(NULL);
-	}
+	close (fd[1]);
 }
 
-void	child_process2(char **av, char **env, int *fd)
+void	child_process2(char **av, char **env, int *fd, pid_t *pid1)
 {
 	int		outfile;
 	pid_t	pid2;
@@ -82,6 +77,7 @@ void	child_process2(char **av, char **env, int *fd)
 		exit(EXIT_SUCCESS);
 	}
 	close (fd[0]);
+	waitpid(*pid1, &status, 0);
 	waitpid(pid2, &status, 0);
 	exit(WEXITSTATUS(status));
 }
@@ -89,13 +85,14 @@ void	child_process2(char **av, char **env, int *fd)
 int	main(int ac, char **av, char **env)
 {
 	int	fd[2];
+	pid_t pid1;
 
 	if (ac != 5)
 		error_and_exit("Usage: ./pipex file1 cmd1 cmd2 file2\n", 1);
 	if (pipe(fd) == -1)
 		error_and_exit("Pipe error", 1);
-	child_process1(av, env, fd);
-	child_process2(av, env, fd);
+	child_process1(av, env, fd, &pid1);
+	child_process2(av, env, fd, &pid1);
 	exit(EXIT_SUCCESS);
 }
 
